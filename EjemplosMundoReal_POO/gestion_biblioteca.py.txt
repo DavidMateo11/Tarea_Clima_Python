@@ -1,0 +1,28 @@
+# Tarea: Ejemplos del Mundo Real y POO
+# Caso: Gestión de Biblioteca
+
+class Libro:
+    """Clase con atributos de un libro real."""
+    def __init__(self, titulo, autor):
+        self.titulo = titulo
+        self.autor = autor
+        self.disponible = True  # Estado inicial
+
+class Usuario:
+    """Clase que demuestra interacción entre objetos."""
+    def __init__(self, nombre):
+        self.nombre = nombre
+
+    def tomar_prestado(self, libro):
+        """Método para cambiar el estado de otro objeto."""
+        if libro.disponible:
+            libro.disponible = False
+            print(f"{self.nombre} ha tomado prestado: {libro.titulo}")
+        else:
+            print(f"El libro '{libro.titulo}' no está disponible.")
+
+# Ejecución del ejemplo
+if __name__ == "__main__":
+    libro1 = Libro("El Quijote", "Miguel de Cervantes")
+    usuario1 = Usuario("Ana")
+    usuario1.tomar_prestado(libro1)
