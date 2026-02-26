@@ -5,6 +5,11 @@ class Producto:
         self.cantidad = cantidad
         self.precio = precio
 
+    # Getters y Setters necesarios para la tarea
+    def get_id(self): return self.id_producto
+    def get_nombre(self): return self.nombre
+    def set_cantidad(self, cantidad): self.cantidad = cantidad
+    def set_precio(self, precio): self.precio = precio
+
     def __str__(self):
-        # Formato para guardar en el archivo .txt
-        return f"{self.id_producto},{self.nombre},{self.cantidad},{self.precio}"
+        return f"ID: {self.id_producto} | {self.nombre} | Cant: {self.cantidad} | Precio: ${self.precio}"

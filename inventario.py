@@ -1,46 +1,72 @@
+import json
 import os
 from producto import Producto
 
 class Inventario:
     def __init__(self, archivo="inventario.txt"):
         self.archivo = archivo
-        self.productos = {}
-        self.cargar_desde_archivo()
+        self.productos = {}  # Colección solicitada (Diccionario)
+        self.cargar_desde_archivo() # Carga automática al iniciar
 
-    def cargar_desde_archivo(self):
-        """Carga datos al iniciar (Requisito 2) y maneja errores (Requisito 3)."""
-        try:
-            if not os.path.exists(self.archivo):
-                with open(self.archivo, 'w') as f: pass
-                return
-            with open(self.archivo, 'r') as f:
-                for linea in f:
-                    partes = linea.strip().split(',')
-                    if len(partes) == 4:
-                        id_p, nom, cant, prec = partes
-                        self.productos[id_p] = Producto(id_p, nom, int(cant), float(prec))
-            print(">>> ÉXITO: Inventario cargado correctamente.")
-        except (FileNotFoundError, PermissionError) as e:
-            print(f">>> ERROR al leer archivo: {e}")
+    def añadir(self, p):
+        if p.get_id() not in self.productos:
+            self.productos[p.get_id()] = p
+            self.guardar_en_archivo()
+            print("Añadido con éxito.")
+        else:
+            print("Error: El ID ya existe.")
 
-    def guardar_en_archivo(self):
-        """Guarda los cambios en el archivo .txt (Requisito 1)."""
-        try:
-            with open(self.archivo, 'w') as f:
-                for p in self.productos.values():
-                    f.write(str(p) + "\n")
-            return True
-        except PermissionError:
-            print(">>> ERROR: No tienes permisos para escribir en el archivo.")
-            return False
+    def eliminar(self, id_p):
+        if id_p in self.productos:
+            del self.productos[id_p]
+            self.guardar_en_archivo()
+            print("Eliminado.")
+        else:
+            print("No se encontró el producto.")
 
-    def añadir_producto(self, producto):
-        self.productos[producto.id_producto] = producto
-        if self.guardar_en_archivo():
-            print(f">>> ÉXITO: {producto.nombre} guardado en el archivo.")
+    # NUEVO: Método para actualizar cantidad o precio
+    def actualizar(self, id_p, cantidad=None, precio=None):
+        if id_p in self.productos:
+            if cantidad is not None:
+                self.productos[id_p].set_cantidad(cantidad)
+            if precio is not None:
+                self.productos[id_p].set_precio(precio)
+            self.guardar_en_archivo()
+            print("Producto actualizado.")
+        else:
+            print("Error: Producto no encontrado.")
 
-    def mostrar_todo(self):
+    # NUEVO: Búsqueda por nombre
+    def buscar_por_nombre(self, nombre):
+        encontrados = [p for p in self.productos.values() if nombre.lower() in p.get_nombre().lower()]
+        if encontrados:
+            for p in encontrados:
+                print(p)
+        else:
+            print("No se encontraron coincidencias.")
+
+    def mostrar_todos(self):
         if not self.productos:
             print("El inventario está vacío.")
-        for p in self.productos.values():
-            print(f"ID: {p.id_producto} | Nombre: {p.nombre} | Stock: {p.cantidad} | Precio: ${p.precio}")
+        else:
+            for p in self.productos.values():
+                print(p)
+
+    def guardar_en_archivo(self):
+        # Serialización a JSON
+        with open(self.archivo, 'w') as f:
+            datos = {k: vars(v) for k, v in self.productos.items()}
+            json.dump(datos, f, indent=4)
+
+    # NUEVO: Cargar datos desde el archivo al iniciar
+    def cargar_desde_archivo(self):
+        if os.path.exists(self.archivo):
+            try:
+                with open(self.archivo, 'r') as f:
+                    datos = json.load(f)
+                    for d in datos.values():
+                        # Creamos objetos Producto a partir del diccionario cargado
+                        p = Producto(d['id_producto'], d['nombre'], d['cantidad'], d['precio'])
+                        self.productos[p.get_id()] = p
+            except (json.JSONDecodeError, FileNotFoundError):
+                print("Iniciando inventario nuevo (archivo vacío o no encontrado).")
